@@ -1,15 +1,14 @@
-const { readFile, writeFile } = require(`fs`);
+const http = require(`http`);
+const fs = require(`fs`);
 
-const util = require(`util`);
-const readFilePromise = util.promisify(readFile);
-const writeFilePromise = util.promisify(writeFile);
-const start = async () => {
-  try {
-    const first = await readFilePromise('./content/first.txt', 'utf8');
-    const second = await readFilePromise('./content/second.txt', 'utf8');
-    console.log(first, second);
-  } catch (error) {
-    console.log(error);
-  }
-};
-start();
+http
+  .createServer(function (req, res) {
+    const filestream = fs.createReadStream('./content/big.txt', 'utf8');
+    filestream.on(`open`, () => {
+      filestream.pipe(res);
+    });
+    filestream.on(`error`, (err) => {
+      res.end(err);
+    });
+  })
+  .listen(5000);
